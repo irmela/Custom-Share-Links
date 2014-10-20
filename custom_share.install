@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Install file for Custom Share.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function custom_share_uninstall() {
+  variable_del('custom_share_links');
+  variable_del('custom_share_nodetypes');
+}
