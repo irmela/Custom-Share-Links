@@ -22,7 +22,7 @@ function custom_share_settings_form() {
 	    '#title'         => t('Share Links'),
 	    '#description'   => t('Display links for these social networks.'),
 	    '#default_value' => variable_get('custom_share_links', array()),
-	    '#options'       => array('facebook' => 'Facebook', 'twitter' => 'Twitter', 'linked_in' => 'LinkedIn', 'xing' => 'Xing', 'email' => 'E-Mail'),
+	    '#options'       => array('facebook' => 'Facebook', 'twitter' => 'Twitter', 'google' => 'Google', 'linked_in' => 'LinkedIn', 'xing' => 'Xing', 'email' => 'E-Mail'),
   	);
 		$form['custom_share_nodetypes'] = array(
 		'#type'          => 'checkboxes',
@@ -66,6 +66,7 @@ function custom_share_links($node) {
 
 	$facebook_share_url = 'http://www.facebook.com/sharer/sharer.php?u=' . $url;
 	$twitter_share_url = 'http://twitter.com/intent/tweet?text=' . $node->title . ' ' . $url;
+	$google_share_url = 'https://plus.google.com/share?url=' . $url;
 	$linked_in_share_url = 'http://www.linkedin.com/shareArticle?mini=true&url=' . $url;
 	$xing_share_url = 'https://www.xing.com/app/user?op=share;url=' . $url;
 	$email_share_url = 'mailto:?subject=' . $node->title . '&body=' . $url;
@@ -73,6 +74,7 @@ function custom_share_links($node) {
 	$links = array(
 		'facebook' => array('title' => 'Facebook', 'href' => $facebook_share_url, 'attributes' => array('target' => '_blank'),),
 		'twitter' => array('title' => 'Twitter', 'href' => $twitter_share_url, 'attributes' => array('target' => '_blank'),),
+		'google' => array('title' => 'Google', 'href' => $google_share_url, 'attributes' => array('target' => '_blank'),),
 		'linked_in' => array('title' => 'LinkedIn', 'href' => $linked_in_share_url, 'attributes' => array('target' => '_blank'),),
 		'xing' => array('title' => 'Xing', 'href' => $xing_share_url, 'attributes' => array('target' => '_blank'),),
 		'email' => array('title' => 'Email', 'href' => $email_share_url, 'attributes' => array('target' => '_blank'),)
