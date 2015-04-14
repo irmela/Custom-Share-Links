@@ -21,14 +21,14 @@ function custom_share_settings_form() {
 	    '#type'          => 'checkboxes',
 	    '#title'         => t('Share Links'),
 	    '#description'   => t('Display links for these social networks.'),
-	    '#default_value' => variable_get('custom_share_links', array('facebook', 'twitter')),
-	    '#options'       => array('facebook' => 'Facebook', 'twitter' => 'Twitter', 'linked_in' => 'LinkedIn', 'xing' => 'Xing', 'email' => 'E-Mail'),
+	    '#default_value' => variable_get('custom_share_links', array()),
+	    '#options'       => array('facebook' => 'Facebook', 'twitter' => 'Twitter', 'google' => 'Google', 'linked_in' => 'LinkedIn', 'xing' => 'Xing', 'email' => 'E-Mail'),
   	);
 		$form['custom_share_nodetypes'] = array(
 		'#type'          => 'checkboxes',
 		'#title'         => t('Node types'),
 		'#description'   => t('Display links for these node types.'),
-		'#default_value' => variable_get('custom_share_nodetypes', array('page', 'article')),
+		'#default_value' => variable_get('custom_share_nodetypes', array()),
 		'#options'       => node_type_get_names(),
 	);
   	return system_settings_form($form);
@@ -38,18 +38,18 @@ function custom_share_settings_form() {
  * Implementation of hook_node_view().
  */
 function custom_share_node_view($node, $view_mode) {
-  $node_types = variable_get('custom_share_nodetypes', array('page', 'article'));
-  $link_types = variable_get('custom_share_links', array('facebook', 'twitter'));
+  $node_types = variable_get('custom_share_nodetypes', array());
+  $link_types = variable_get('custom_share_links', array());
   $share_links = custom_share_links($node);
 
   foreach ($share_links as $key => $value) {
-  	if(!empty($link_types[$key])) {
+  	if(isset($link_types[$key]) && !is_numeric($link_types[$key])) {
   		$links_array[$key] = $share_links[$key];
   	}
   }
   
   // Display in link section
-  $show = (!empty($node->type) && in_array($node->type, $node_types, TRUE) && ($node->status == 1));  
+  $show = (!empty($node->type) && in_array($node->type, $node_types, TRUE) && ($node->status == 1) && isset($links_array));  
   if ($show) {
     //$node->content['links']['custom_share']['#markup'] = print theme('links', array('links' => $links_array));
     $node->content['links']['custom_share'] = array(
@@ -62,19 +62,19 @@ function custom_share_node_view($node, $view_mode) {
 
 // Helper function to create links
 function custom_share_links($node) {
-	global $base_url;
-	global $language;
-	$lang_prefix = $language->language == 'en-gb' ? '/en' : '/de';
+	$url = url(drupal_get_path_alias('node/' . $node->nid), array('absolute' => true));
 
-	$facebook_share_url = 'http://www.facebook.com/sharer/sharer.php?u=' . $base_url . $lang_prefix . '/' . drupal_get_path_alias("node/" . $node->nid);
-	$twitter_share_url = 'http://twitter.com/intent/tweet?text=' . $node->title . ' ' . $base_url . $lang_prefix . '/' . drupal_get_path_alias("node/" . $node->nid);
-	$linked_in_share_url = 'http://www.linkedin.com/shareArticle?mini=true&url=' . $base_url . $lang_prefix . '/' . drupal_get_path_alias("node/" . $node->nid);
-	$xing_share_url = 'https://www.xing.com/app/user?op=share;url=' . $base_url . $lang_prefix . '/' . drupal_get_path_alias("node/" . $node->nid);
-	$email_share_url = 'mailto:?subject=' . $node->title . '&body=' . $base_url . $lang_prefix . '/' . drupal_get_path_alias("node/" . $node->nid);
+	$facebook_share_url = 'http://www.facebook.com/sharer/sharer.php?u=' . $url;
+	$twitter_share_url = 'http://twitter.com/intent/tweet?text=' . $node->title . ' ' . $url;
+	$google_share_url = 'https://plus.google.com/share?url=' . $url;
+	$linked_in_share_url = 'http://www.linkedin.com/shareArticle?mini=true&url=' . $url;
+	$xing_share_url = 'https://www.xing.com/app/user?op=share;url=' . $url;
+	$email_share_url = 'mailto:?subject=' . $node->title . '&body=' . $url;
 
 	$links = array(
 		'facebook' => array('title' => 'Facebook', 'href' => $facebook_share_url, 'attributes' => array('target' => '_blank'),),
 		'twitter' => array('title' => 'Twitter', 'href' => $twitter_share_url, 'attributes' => array('target' => '_blank'),),
+		'google' => array('title' => 'Google', 'href' => $google_share_url, 'attributes' => array('target' => '_blank'),),
 		'linked_in' => array('title' => 'LinkedIn', 'href' => $linked_in_share_url, 'attributes' => array('target' => '_blank'),),
 		'xing' => array('title' => 'Xing', 'href' => $xing_share_url, 'attributes' => array('target' => '_blank'),),
 		'email' => array('title' => 'Email', 'href' => $email_share_url, 'attributes' => array('target' => '_blank'),)
