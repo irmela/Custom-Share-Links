@@ -11,4 +11,5 @@
 function custom_share_uninstall() {
   variable_del('custom_share_links');
   variable_del('custom_share_nodetypes');
+  variable_del('custom_share_viewmodes');
 }
