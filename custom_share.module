@@ -94,9 +94,15 @@ function custom_share_links($node) {
  * @return array $view_modes machine name => label of all available view modes
  */
 function _custom_share_view_modes() {
+
 	$entity_info = entity_get_info('node');
 	$view_modes = array();
+
 	foreach ($entity_info['view modes'] as $machine_name => $property) {
+    
+    // skip rss, search_index, search_result and token
+    if (in_array($machine_name, array('rss', 'search_index', 'search_result', 'token'))) { continue; }
+
 		$view_modes[$machine_name] = $property['label'];
 	}
 	return $view_modes;
