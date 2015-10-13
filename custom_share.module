@@ -45,26 +45,36 @@ function custom_share_settings_form() {
  * Implementation of hook_node_view().
  */
 function custom_share_node_view($node, $view_mode) {
-  $node_types = variable_get('custom_share_nodetypes', array());
-  $link_types = variable_get('custom_share_links', array());
-  $view_modes = variable_get('custom_share_viewmodes', array());
-  $share_links = custom_share_links($node);
+  if($render_array = _custom_share_get_links_render_array($node, $view_mode)) {
+    $node->content['links']['custom_share'] = $render_array;
+  }
+}
 
-  foreach ($share_links as $key => $value) {
-  	if(isset($link_types[$key]) && !is_numeric($link_types[$key])) {
-  		$links_array[$key] = $share_links[$key];
-  	}
+
+/**
+ * Implements hook_block_info().
+ */
+function custom_share_block_info() {
+  $blocks['custom_share_links_block'] = array(
+    'info' => 'Custom Share Links',
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function custom_share_block_view($delta = '') {
+  switch ($delta) {
+    case 'custom_share_links_block':
+      $block['content'] = '';
+      if ($node = menu_get_object()) {
+        $links = _custom_share_get_links_render_array($node, array(), TRUE);
+        $block['content'] = render($links);
+      }
+      break;
   }
-  // Display in link section
-  $show = (!empty($node->type) && in_array($node->type, $node_types, TRUE) && ($node->status == 1) && isset($links_array) && in_array($view_mode, $view_modes, TRUE));  
-  if ($show) {
-    //$node->content['links']['custom_share']['#markup'] = print theme('links', array('links' => $links_array));
-    $node->content['links']['custom_share'] = array(
-      '#theme' => 'links',
-      '#links' => $links_array,
-      '#attributes' => array('class' => array('links', 'inline')),
-    );
-  }
+  return $block;
 }
 
 // Helper function to create links
@@ -89,6 +99,37 @@ function custom_share_links($node) {
 	return $links;
 }
 
+
+// Helper function to render links
+function _custom_share_get_links_render_array($node, $view_mode = array(), $is_block = FALSE)  {
+  $node_types = variable_get('custom_share_nodetypes', array());
+  $link_types = variable_get('custom_share_links', array());
+  $view_modes = variable_get('custom_share_viewmodes', array());
+  $share_links = custom_share_links($node);
+
+  foreach ($share_links as $key => $value) {
+    if(isset($link_types[$key]) && !is_numeric($link_types[$key])) {
+      $links_array[$key] = $share_links[$key];
+    }
+  }
+  // Check if Links should be displayed
+  $show = (!empty($node->type)
+    && in_array($node->type, $node_types, TRUE)
+    && ($node->status == 1)
+    && isset($links_array)
+    && (in_array($view_mode, $view_modes, TRUE) || $is_block));
+  if ($show) {
+    $render_array = array(
+      '#theme' => 'links',
+      '#links' => $links_array,
+      '#attributes' => array('class' => array('links', 'inline')),
+    );
+    return $render_array;
+  }
+
+  return array();
+}
+
 /**
  * Helper function to build select list options for view modes
  * @return array $view_modes machine name => label of all available view modes
@@ -99,7 +140,7 @@ function _custom_share_view_modes() {
 	$view_modes = array();
 
 	foreach ($entity_info['view modes'] as $machine_name => $property) {
-    
+
     // skip rss, search_index, search_result and token
     if (in_array($machine_name, array('rss', 'search_index', 'search_result', 'token'))) { continue; }
 
