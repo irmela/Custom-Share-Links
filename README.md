@@ -14,4 +14,4 @@ This is a lightweight drupal custom module to display social share links (Facebo
 
 
 # TODO
-* Make links available as a block
+* ~~Make links available as a block~~
